@@ -173,7 +173,7 @@ RCT_EXPORT_METHOD(shareAudio:(NSString *)previewUrl
                                 @"title":title,
                                 @"description":description}
                          Type:AudioMessage
-                        Scene:scene];    
+                        Scene:scene];
     }
 }
 
@@ -452,6 +452,9 @@ RCT_EXPORT_METHOD(shareVideo:(NSString *)previewUrl
 - (void)handleOpenURLNotification:(NSNotification *)notification {
     NSURL *url = [NSURL URLWithString:[notification userInfo][@"url"]];
     NSString *schemaPrefix = [@"tencent" stringByAppendingString:appId];
+    if (url && [TencentOAuth CanHandleUniversalLink:url]) {
+        [QQApiInterface handleOpenUniversallink:url delegate:self];
+    }
     if ([url isKindOfClass:[NSURL class]] && [[url absoluteString] hasPrefix:[schemaPrefix stringByAppendingString:@"://response_from_qq"]]) {
         [QQApiInterface handleOpenURL:url delegate:self];
     } else {
@@ -467,7 +470,8 @@ RCT_EXPORT_METHOD(shareVideo:(NSString *)previewUrl
                 NSString *value = (NSString *)scheme;
                 if ([value hasPrefix:@"tencent"] && (nil == tencentOAuth)) {
                     appId = [value substringFromIndex:7];
-                    tencentOAuth = [[TencentOAuth alloc] initWithAppId:appId andDelegate:self];
+//                    tencentOAuth = [[TencentOAuth alloc] initWithAppId:appId andDelegate:self];
+                    tencentOAuth = [[TencentOAuth alloc] initWithAppId:appId andUniversalLink:nil andDelegate:self];
                     break;
                 }
             }
